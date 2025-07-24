@@ -2,25 +2,22 @@ import tkinter as tk
 from tkinter import messagebox
 from datetime import datetime
 import os
-import sys # Importar sys para lidar com caminhos do PyInstaller
-from PIL import Image, ImageTk # Necessário para exibir imagens (instale com pip install Pillow)
+import sys 
+from PIL import Image, ImageTk 
 
 # --- Funções Auxiliares ---
 
 def resource_path(relative_path):
     """Obtém o caminho absoluto para o recurso, para ser compatível com PyInstaller."""
     if hasattr(sys, '_MEIPASS'):
-        # Se estiver rodando como um executável PyInstaller (onefile),
-        # sys._MEIPASS é o caminho para o diretório temporário onde os recursos são extraídos.
         base_path = sys._MEIPASS
-        print(f"DEBUG: Modo PyInstaller detectado. Base path: {base_path}") # Debugging
+        print(f"DEBUG: Modo PyInstaller detectado. Base path: {base_path}") 
     else:
-        # Se não estiver rodando como um executável PyInstaller, usa o diretório atual do script.
         base_path = os.path.abspath(".")
-        print(f"DEBUG: Modo de script normal detectado. Base path: {base_path}") # Debugging
+        print(f"DEBUG: Modo de script normal detectado. Base path: {base_path}")
     
     full_path = os.path.join(base_path, relative_path)
-    print(f"DEBUG: Caminho completo do recurso: {full_path}") # Debugging
+    print(f"DEBUG: Caminho completo do recurso: {full_path}") 
     return full_path
 
 def show_message(title, message, type='info'):
@@ -33,7 +30,6 @@ def show_message(title, message, type='info'):
 def save_start_date(date_str):
     """Salva a data de início em um arquivo."""
     try:
-        # O arquivo de data também precisa usar resource_path
         with open(resource_path("start_date.txt"), "w") as f:
             f.write(date_str)
         return True
@@ -42,8 +38,6 @@ def save_start_date(date_str):
         return False
 
 def load_start_date():
-    """Carrega a data de início de um arquivo."""
-    # O arquivo de data também precisa usar resource_path
     data_file_path = resource_path("start_date.txt")
     if os.path.exists(data_file_path):
         try:
@@ -54,19 +48,17 @@ def load_start_date():
     return None
 
 def calculate_days(start_date_str):
-    """Calcula o número de dias desde a data de início."""
     try:
         start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
         today = datetime.now()
         
-        # Zera as horas, minutos, segundos e milissegundos para garantir a contagem correta de dias
         start_date = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
         today = today.replace(hour=0, minute=0, second=0, microsecond=0)
 
         diff = today - start_date
         return diff.days
     except ValueError:
-        return -1 # Indica um formato de data inválido
+        return -1
 
 # --- Lógica Principal do Aplicativo ---
 
@@ -74,11 +66,10 @@ class RelationshipCounterApp:
     def __init__(self, master):
         self.master = master
         master.title("Eu te amo")
-        master.geometry("400x550") # Tamanho da janela
-        master.resizable(False, False) # Impede redimensionamento
-        master.configure(bg="#ffe4e6") # Cor de fundo rosa claro
+        master.geometry("400x550") 
+        master.resizable(False, False) 
+        master.configure(bg="#ffe4e6") 
 
-        # Configurações de estilo
         self.font_title = ("Inter", 18, "bold")
         self.font_days = ("Inter", 30, "bold")
         self.font_label = ("Inter", 10)
@@ -96,48 +87,45 @@ class RelationshipCounterApp:
         # Container para o conteúdo central
         self.content_frame = tk.Frame(self.main_frame, bg=self.white, padx=20, pady=20, bd=0, relief="flat")
         self.content_frame.grid(row=0, column=0, sticky="nsew")
-        self.content_frame.grid_rowconfigure(0, weight=0) # Cat gif
-        self.content_frame.grid_rowconfigure(1, weight=0) # Title
-        self.content_frame.grid_rowconfigure(2, weight=1) # Days display
-        self.content_frame.grid_rowconfigure(3, weight=0) # Date input section
+        self.content_frame.grid_rowconfigure(0, weight=0) 
+        self.content_frame.grid_rowconfigure(1, weight=0) 
+        self.content_frame.grid_rowconfigure(2, weight=1) 
+        self.content_frame.grid_rowconfigure(3, weight=0) 
         self.content_frame.grid_columnconfigure(0, weight=1)
 
-        # Imagem do gatinho (agora para GIF animado)
-        # Usando a função resource_path para garantir que o PyInstaller encontre o arquivo
         self.gif_image_path = resource_path("cat_animated.gif")
         self.frames = []
         self.current_frame_index = 0
-        self.animation_id = None # Para controlar o loop de animação
+        self.animation_id = None 
         
-        print(f"DEBUG: Tentando carregar GIF de: {self.gif_image_path}") # Debugging
+        print(f"DEBUG: Tentando carregar GIF de: {self.gif_image_path}") 
         try:
             if os.path.exists(self.gif_image_path):
-                print(f"DEBUG: Arquivo GIF encontrado em: {self.gif_image_path}") # Debugging
+                print(f"DEBUG: Arquivo GIF encontrado em: {self.gif_image_path}") 
                 self.gif_img = Image.open(self.gif_image_path)
                 
-                # Extrai todos os quadros do GIF
+                
                 try:
                     while True:
-                        # Redimensiona cada quadro para um tamanho consistente
+                        
                         frame = self.gif_img.copy()
                         frame = frame.resize((100, 100), Image.LANCZOS)
                         self.frames.append(ImageTk.PhotoImage(frame))
-                        self.gif_img.seek(len(self.frames)) # Move para o próximo quadro
+                        self.gif_img.seek(len(self.frames)) 
                 except EOFError:
-                    pass # Fim dos quadros do GIF
+                    pass 
 
                 if self.frames:
                     self.cat_label = tk.Label(self.content_frame, image=self.frames[0], bg=self.white)
                     self.cat_label.grid(row=0, column=0, pady=(0, 15))
-                    self.animate_gif() # Inicia a animação
-                    print(f"DEBUG: GIF carregado com {len(self.frames)} quadros.") # Debugging
+                    self.animate_gif() 
+                    print(f"DEBUG: GIF carregado com {len(self.frames)} quadros.") 
                 else:
                     self.cat_label = tk.Label(self.content_frame, text="[GIF de Gatinho (vazio)]", font=("Inter", 10), fg="#888", bg=self.white)
                     self.cat_label.grid(row=0, column=0, pady=(0, 15))
                     show_message("Aviso", "O arquivo GIF está vazio ou corrompido. Usando placeholder de texto.", 'info')
                     print(f"DEBUG: O GIF '{self.gif_image_path}' não contém quadros válidos ou está vazio.")
             else:
-                # Se o arquivo GIF não existir, usa um label de texto como placeholder
                 self.cat_label = tk.Label(self.content_frame, text="[GIF de Gatinho Fofo]", font=("Inter", 10), fg="#888", bg=self.white)
                 self.cat_label.grid(row=0, column=0, pady=(0, 15))
                 show_message("Aviso", f"Arquivo '{self.gif_image_path}' não encontrado. Usando placeholder de texto para o gatinho.\nCertifique-se de que o GIF está na mesma pasta do script e o nome está correto.", 'info')
@@ -160,7 +148,7 @@ class RelationshipCounterApp:
         # Seção de entrada de data
         self.date_input_frame = tk.Frame(self.content_frame, bg=self.white)
         self.date_input_frame.grid(row=3, column=0, sticky="ew", pady=(0, 10))
-        self.date_input_frame.grid_columnconfigure(0, weight=1) # Faz o campo de entrada preencher o espaço
+        self.date_input_frame.grid_columnconfigure(0, weight=1) 
 
         self.date_label = tk.Label(self.date_input_frame, text="Quando tudo começou? (AAAA-MM-DD)", font=self.font_label, fg="#555", bg=self.white)
         self.date_label.pack(pady=(0, 5))
@@ -180,8 +168,6 @@ class RelationshipCounterApp:
             self.cat_label.config(image=self.frames[self.current_frame_index])
             self.current_frame_index = (self.current_frame_index + 1) % len(self.frames)
             
-            # Tenta obter a duração do quadro do GIF, caso contrário, usa um padrão de 100ms
-            # Verifica se gif_img e 'duration' existem antes de tentar acessar
             delay = self.gif_img.info['duration'] if hasattr(self, 'gif_img') and 'duration' in self.gif_img.info else 100
             self.animation_id = self.master.after(delay, self.animate_gif)
         
